@@ -39,6 +39,12 @@
     git --version | grep --color=auto "${pkgs.git.version}"
   '';
 
+  languages.python = {
+    enable = true;
+    venv.enable = true;
+    venv.requirements = ./requirement.txt;
+  };
+
   # https://devenv.sh/git-hooks/
   # git-hooks.hooks.shellcheck.enable = true;
 
