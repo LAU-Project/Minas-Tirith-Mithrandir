@@ -10,6 +10,7 @@ from ressource.time import *
 from dotenv import load_dotenv
 load_dotenv()
 import datetime
+from ressource.garde import guard_list
 asyncio.set_event_loop(asyncio.new_event_loop())
 
 TOKEN = getenv("DISCORD_TOKEN")
@@ -236,5 +237,14 @@ async def tuto_mod(interaction : discord.Interaction):
    embed.set_footer(text="Guide fait par Alessandro P.")
    await interaction.response.send_message(embed=embed)
 
+@bot.slash_command(name="week", description="Information on the guards")
+async def week(interaction : discord.Interaction):
+  print("Commande Week")
+  embed = discord.Embed(
+      title=f"The guards of the week",
+      description=(guard_list())
+  )
+  await interaction.response.send_message(embed=embed)
+  
 
 bot.run(TOKEN)
