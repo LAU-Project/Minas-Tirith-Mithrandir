@@ -7,7 +7,8 @@ from time import *
 from ressource.help import *
 from ressource.smash import *
 from ressource.time import *
-
+from dotenv import load_dotenv
+load_dotenv()
 import datetime
 asyncio.set_event_loop(asyncio.new_event_loop())
 
