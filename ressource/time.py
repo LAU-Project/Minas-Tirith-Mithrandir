@@ -12,6 +12,6 @@ def get_time():
     now = datetime.datetime.now(ZoneInfo("Europe/Paris"))
     date = now.strftime("%d/%m/%Y")
     time = now.strftime("%Hh%M")
-    return "On est actuellement le " + date + " et il est " + time
+    return "On est actuellement le " + date + " et il est " + time , date
 
 print(get_time())
