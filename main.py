@@ -7,6 +7,7 @@ from time import *
 from ressource.help import *
 from ressource.smash import *
 from ressource.time import *
+from ressource.check_role import check_role, get_user_role_names
 from dotenv import load_dotenv
 load_dotenv()
 import datetime
@@ -104,11 +105,25 @@ async def bio(ctx):
 
 @bot.slash_command(name="ban", description="its a ban !")
 async def ban(ctx: discord.ApplicationContext):
-    allowed_role = ["Fondateur", "Modérateur"]
-    if any(role.name in allowed_role for role in ctx.author.roles):
-        await ctx.respond("test !")
-    else:
-        await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
+  allowed_role = ["Fondateur", "Modérateur"]
+  if check_role(allowed_role, ctx.author.roles):
+    await ctx.respond("test !")
+  else:
+    await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
+
+
+@bot.slash_command(name="check_role", description="Affiche les roles autorises et tes roles")
+async def check_role_cmd(ctx: discord.ApplicationContext):
+  allowed_role = ["Fondateur", "Modérateur"]
+  user_roles = get_user_role_names(ctx.author.roles)
+  has_required_role = check_role(allowed_role, ctx.author.roles)
+
+  embed = discord.Embed(title="Verification des roles")
+  embed.add_field(name="Roles autorises", value=", ".join(allowed_role), inline=False)
+  embed.add_field(name="Tes roles", value=", ".join(user_roles) if user_roles else "Aucun", inline=False)
+  embed.add_field(name="Acces", value="Oui" if has_required_role else "Non", inline=False)
+
+  await ctx.respond(embed=embed, ephemeral=True)
 
 @bot.slash_command(name="purge", description="Clear un salon pour le rendre clean", guild_ids=[GUILD_ID])
 async def purge(ctx: discord.ApplicationContext, nb_message: int):
@@ -124,6 +139,7 @@ async def purge(ctx: discord.ApplicationContext, nb_message: int):
             await ctx.respond("nb de message au dessus de 100", ephemeral=True)
             return
       await ctx.respond("Purge en cours...", ephemeral=True)
+
       messages = [message async for message in ctx.channel.history(limit=nb_message)]
       now = discord.utils.utcnow()
       recent = [m for m in messages if (now - m.created_at) < timedelta(days=14)]
