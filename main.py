@@ -7,6 +7,7 @@ from time import *
 from ressource.help import *
 from ressource.smash import *
 from ressource.time import *
+from ressource.AER_team import get_aer_team
 from ressource.check_role import check_role, get_user_role_names
 from dotenv import load_dotenv
 load_dotenv()
@@ -213,6 +214,12 @@ async def pokepitech(interaction : discord.Interaction):
 async def help(interaction : discord.Interaction):
   print("Commande help")
   embed = discord.Embed(title=f"This is the /help command", description=my_help())
+  await interaction.response.send_message(embed=embed)
+
+@bot.slash_command(name="aer", description="Team AER")
+async def aer(interaction : discord.Interaction):
+  print("Commande aer")
+  embed = discord.Embed(title=f"Team AER", description=await get_aer_team(bot))
   await interaction.response.send_message(embed=embed)
 
 @bot.slash_command(name="time", description="The uptime command")
