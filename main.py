@@ -269,7 +269,7 @@ async def week(interaction : discord.Interaction):
   print("Commande Week")
   embed = discord.Embed(
       title=f"The guards of the week",
-      description=(guard_list())
+      description=await guard_list(bot)
   )
   await interaction.response.send_message(embed=embed)
   
