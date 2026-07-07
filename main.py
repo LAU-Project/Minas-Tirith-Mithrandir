@@ -7,6 +7,8 @@ from time import *
 from ressource.help import *
 from ressource.smash import *
 from ressource.time import *
+from ressource.AER_team import get_aer_team
+from ressource.check_role import check_role, get_user_role_names
 from dotenv import load_dotenv
 load_dotenv()
 import datetime
@@ -22,6 +24,10 @@ if not TOKEN:
 bot = discord.Bot()
 
 basecommand = bot.create_group("base", "Greet people")
+
+
+def get_author_roles(ctx):
+  return getattr(ctx.author, "roles", [])
 
 def time_to_timestamp(date_str):
     dt = datetime.datetime.strptime(date_str, "%d/%m/%Y")
@@ -105,39 +111,54 @@ async def bio(ctx):
 
 @bot.slash_command(name="ban", description="its a ban !")
 async def ban(ctx: discord.ApplicationContext):
-    allowed_role = ["Fondateur", "Modérateur"]
-    if any(role.name in allowed_role for role in ctx.author.roles):
-        await ctx.respond("test !")
-    else:
-        await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
+  allowed_role = ["Fondateur", "Modérateur"]
+  if check_role(allowed_role, get_author_roles(ctx)):
+    await ctx.respond("test !")
+  else:
+    await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
+
+
+@bot.slash_command(name="check_role", description="Affiche les roles autorises et tes roles")
+async def check_role_cmd(ctx: discord.ApplicationContext):
+  allowed_role = ["Fondateur", "Modérateur"]
+  user_roles = get_user_role_names(get_author_roles(ctx))
+  has_required_role = check_role(allowed_role, get_author_roles(ctx))
+
+  embed = discord.Embed(title="Verification des roles")
+  embed.add_field(name="Roles autorises", value=", ".join(allowed_role), inline=False)
+  embed.add_field(name="Tes roles", value=", ".join(user_roles) if user_roles else "Aucun", inline=False)
+  embed.add_field(name="Acces", value="Oui" if has_required_role else "Non", inline=False)
+
+  await ctx.respond(embed=embed, ephemeral=True)
 
 @bot.slash_command(name="purge", description="Clear un salon pour le rendre clean", guild_ids=[GUILD_ID])
 async def purge(ctx: discord.ApplicationContext, nb_message: int):
-   allowed_role = ["Fondateur", "Modérateur"]
-   print("Commande Purge")
-   embed = discord.Embed(title="PURGE !", description="Purge terminé")
-   embed.set_image(url="https://images-ext-1.discordapp.net/external/HiaeokP0KFI8PXVeq_SpiMNZ9-Qe0cQsQWicSn35PGo/https/media.tenor.com/FwNuvPzK6IIAAAPo/nuke-it-olliesblog-olliesblog-nuke-it.mp4")
-   if any(role.name in allowed_role for role in ctx.author.roles):
-      if (nb_message < 1):
-            await ctx.respond("nb de message pas assez", ephemeral=True)
-            return
-      if (nb_message > 100):
-            await ctx.respond("nb de message au dessus de 100", ephemeral=True)
-            return
-      await ctx.respond("Purge en cours...", ephemeral=True)
-      messages = [message async for message in ctx.channel.history(limit=nb_message)]
-      now = discord.utils.utcnow()
-      recent = [m for m in messages if (now - m.created_at) < timedelta(days=14)]
-      old = [m for m in messages if m not in recent]
-      if recent:
-        await ctx.channel.delete_messages(recent)
-      for message in old:
-        await message.delete()
-      await ctx.followup.send(embed=embed)
-      sleep(5)
-      await ctx.channel.purge(limit=1)
-   else:
-      await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
+  allowed_role = ["Fondateur", "Modérateur"]
+  print("Commande Purge")
+  embed = discord.Embed(title="PURGE !", description="Purge terminé")
+  embed.set_image(url="https://images-ext-1.discordapp.net/external/HiaeokP0KFI8PXVeq_SpiMNZ9-Qe0cQsQWicSn35PGo/https/media.tenor.com/FwNuvPzK6IIAAAPo/nuke-it-olliesblog-olliesblog-nuke-it.mp4")
+  if any(role.name in allowed_role for role in get_author_roles(ctx)):
+    if (nb_message < 1):
+      await ctx.respond("nb de message pas assez", ephemeral=True)
+      return
+    if (nb_message > 100):
+      await ctx.respond("nb de message au dessus de 100", ephemeral=True)
+      return
+    await ctx.respond("Purge en cours...", ephemeral=True)
+
+    messages = [message async for message in ctx.channel.history(limit=nb_message)]
+    now = discord.utils.utcnow()
+    recent = [m for m in messages if (now - m.created_at) < timedelta(days=14)]
+    old = [m for m in messages if m not in recent]
+    if recent:
+      await ctx.channel.delete_messages(recent)
+    for message in old:
+      await message.delete()
+    await ctx.followup.send(embed=embed)
+    sleep(5)
+    await ctx.channel.purge(limit=1)
+  else:
+    await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
 
 @bot.slash_command(name="banlist", description="Choisie le jeu et le nombre, je m'occupe du reste")
 async def tabban(interaction : discord.Interaction, name : str, nb: int):
@@ -159,10 +180,10 @@ async def tabban(interaction : discord.Interaction, name : str, nb: int):
 
 @bot.slash_command(name="admin_only", description="Commande réservée aux admins")
 async def admin_only(ctx):
-    if "Fondateur" in [role.name for role in ctx.author.roles]:
-        await ctx.respond("Commande admin exécutée !")
-    else:
-        await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
+  if "Fondateur" in [role.name for role in get_author_roles(ctx)]:
+    await ctx.respond("Commande admin exécutée !")
+  else:
+    await ctx.respond("Tu n’as pas le rôle requis.", ephemeral=True)
 
 @bot.slash_command(name="pokepitech", description="Info pour pokepitech", guild_ids=[GUILD_ID])
 async def pokepitech(interaction : discord.Interaction):
@@ -194,6 +215,12 @@ async def pokepitech(interaction : discord.Interaction):
 async def help(interaction : discord.Interaction):
   print("Commande help")
   embed = discord.Embed(title=f"This is the /help command", description=my_help())
+  await interaction.response.send_message(embed=embed)
+
+@bot.slash_command(name="aer", description="Team AER")
+async def aer(interaction : discord.Interaction):
+  print("Commande aer")
+  embed = discord.Embed(title=f"Team AER", description=await get_aer_team(bot))
   await interaction.response.send_message(embed=embed)
 
 @bot.slash_command(name="time", description="The uptime command")
