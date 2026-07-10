@@ -73,6 +73,7 @@ jobs:
           cd target
           git config user.name "mirror-bot"
           git config user.email "mirror-bot@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.MIRROR_TOKEN }}@github.com/${{ env.MIRROR_TARGET }}.git
           git remote add bot-source ../source
           git fetch bot-source main
           if git ls-tree HEAD All-repo/discord-bot | grep -q .; then
@@ -113,6 +114,7 @@ jobs:
           cd target
           git config user.name "mirror-bot"
           git config user.email "mirror-bot@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.MIRROR_TOKEN }}@github.com/${{ env.MIRROR_TARGET }}.git
           git remote add front-source ../source
           git fetch front-source split-front
           if git ls-tree HEAD All-repo/frontend | grep -q .; then
@@ -153,6 +155,7 @@ jobs:
           cd target
           git config user.name "mirror-bot"
           git config user.email "mirror-bot@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.MIRROR_TOKEN }}@github.com/${{ env.MIRROR_TARGET }}.git
           git remote add back-source ../source
           git fetch back-source split-back
           if git ls-tree HEAD All-repo/backend | grep -q .; then
