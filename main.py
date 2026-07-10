@@ -236,6 +236,4 @@ async def tuto_mod(interaction : discord.Interaction):
    embed.set_footer(text="Guide fait par Alessandro P.")
    await interaction.response.send_message(embed=embed)
 
-
-
 bot.run(TOKEN)
