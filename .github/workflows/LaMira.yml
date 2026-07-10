@@ -76,10 +76,10 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.MIRROR_TOKEN }}@github.com/${{ env.MIRROR_TARGET }}.git
           git remote add bot-source ../source
           git fetch bot-source main
-          if git ls-tree HEAD All-repo/discord-bot | grep -q .; then
-            git subtree pull --prefix=All-repo/discord-bot bot-source main
+          if git ls-tree HEAD discord-bot | grep -q .; then
+            git subtree pull --prefix=discord-bot bot-source main
           else
-            git subtree add --prefix=All-repo/discord-bot bot-source main
+            git subtree add --prefix=discord-bot bot-source main
           fi
           git push
 
@@ -117,10 +117,10 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.MIRROR_TOKEN }}@github.com/${{ env.MIRROR_TARGET }}.git
           git remote add front-source ../source
           git fetch front-source split-front
-          if git ls-tree HEAD All-repo/frontend | grep -q .; then
-            git subtree pull --prefix=All-repo/frontend front-source split-front
+          if git ls-tree HEAD frontend | grep -q .; then
+            git subtree pull --prefix=frontend front-source split-front
           else
-            git subtree add --prefix=All-repo/frontend front-source split-front
+            git subtree add --prefix=frontend front-source split-front
           fi
           git push
 
@@ -158,9 +158,9 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.MIRROR_TOKEN }}@github.com/${{ env.MIRROR_TARGET }}.git
           git remote add back-source ../source
           git fetch back-source split-back
-          if git ls-tree HEAD All-repo/backend | grep -q .; then
-            git subtree pull --prefix=All-repo/backend back-source split-back
+          if git ls-tree HEAD backend | grep -q .; then
+            git subtree pull --prefix=backend back-source split-back
           else
-            git subtree add --prefix=All-repo/backend back-source split-back
+            git subtree add --prefix=backend back-source split-back
           fi
           git push
