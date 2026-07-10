@@ -1,0 +1,163 @@
+name: La Mira
+
+on:
+  push:
+    branches:
+      - main
+      - 25-worflows
+  pull_request:
+    branches:
+      - main
+      - 25-worflows
+
+env:
+  MIRROR_TARGET: LAU-Project/Minas-Tirith
+
+jobs:
+  check_work_bot:
+    if: github.repository == 'LAU-Project/Minas-Tirith-Mithrandir'
+    runs-on: ubuntu-latest
+    name: check_work_bot
+    container:
+      image: python:3.14
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        run: pip install -r requirement.txt
+
+  check_work_front:
+    if: github.repository == 'LAU-Project/Minas-Tirith-Pelennor'
+    runs-on: ubuntu-latest
+    name: check_work_front
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        run: |
+          cd frontend/pelennor
+          npm ci
+
+  check_work_back:
+    if: github.repository == 'LAU-Project/Minas-Tirith-Citadel'
+    runs-on: ubuntu-latest
+    name: check_work_back
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm ci
+
+  mira_bot:
+    runs-on: ubuntu-latest
+    needs: check_work_bot
+    if: |
+      always() &&
+      needs.check_work_bot.result == 'success' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: source
+          fetch-depth: 0
+
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ env.MIRROR_TARGET }}
+          token: ${{ secrets.MIRROR_TOKEN }}
+          path: target
+          fetch-depth: 0
+
+      - name: Subtree sync bot
+        run: |
+          cd target
+          git config user.name "mirror-bot"
+          git config user.email "mirror-bot@users.noreply.github.com"
+          git remote add bot-source ../source
+          git fetch bot-source main
+          if git ls-tree HEAD All-repo/discord-bot | grep -q .; then
+            git subtree pull --prefix=All-repo/discord-bot bot-source main
+          else
+            git subtree add --prefix=All-repo/discord-bot bot-source main
+          fi
+          git push
+
+  mira_front:
+    runs-on: ubuntu-latest
+    needs: check_work_front
+    if: |
+      always() &&
+      needs.check_work_front.result == 'success' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: source
+          fetch-depth: 0
+
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ env.MIRROR_TARGET }}
+          token: ${{ secrets.MIRROR_TOKEN }}
+          path: target
+          fetch-depth: 0
+
+      - name: Split frontend/pelennor subtree
+        run: |
+          cd source
+          git subtree split --prefix=frontend/pelennor -b split-front
+
+      - name: Subtree sync front
+        run: |
+          cd target
+          git config user.name "mirror-bot"
+          git config user.email "mirror-bot@users.noreply.github.com"
+          git remote add front-source ../source
+          git fetch front-source split-front
+          if git ls-tree HEAD All-repo/frontend | grep -q .; then
+            git subtree pull --prefix=All-repo/frontend front-source split-front
+          else
+            git subtree add --prefix=All-repo/frontend front-source split-front
+          fi
+          git push
+
+  mira_back:
+    runs-on: ubuntu-latest
+    needs: check_work_back
+    if: |
+      always() &&
+      needs.check_work_back.result == 'success' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: source
+          fetch-depth: 0
+
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ env.MIRROR_TARGET }}
+          token: ${{ secrets.MIRROR_TOKEN }}
+          path: target
+          fetch-depth: 0
+
+      - name: Split backend subtree
+        run: |
+          cd source
+          git subtree split --prefix=backend -b split-back
+
+      - name: Subtree sync back
+        run: |
+          cd target
+          git config user.name "mirror-bot"
+          git config user.email "mirror-bot@users.noreply.github.com"
+          git remote add back-source ../source
+          git fetch back-source split-back
+          if git ls-tree HEAD All-repo/backend | grep -q .; then
+            git subtree pull --prefix=All-repo/backend back-source split-back
+          else
+            git subtree add --prefix=All-repo/backend back-source split-back
+          fi
+          git push
