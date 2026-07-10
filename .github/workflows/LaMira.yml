@@ -77,10 +77,13 @@ jobs:
           git remote add bot-source ../source
           git fetch bot-source main
           if git ls-tree HEAD discord-bot | grep -q .; then
-            git subtree pull --prefix=discord-bot bot-source main
+            GIT_MERGE_AUTOEDIT=no git subtree pull --prefix=discord-bot bot-source main || true
           else
-            git subtree add --prefix=discord-bot bot-source main
+            git subtree add --prefix=discord-bot bot-source main || true
           fi
+          git rm -rf discord-bot/.github/ 2>/dev/null || true
+          git add discord-bot/
+          git diff --cached --quiet || git commit -m "chore(bot): mirror Mithrandir ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
           git push
 
   mira_front:
