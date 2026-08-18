@@ -10,6 +10,7 @@ from ressource.time import *
 from ressource.AER_team import get_aer_team
 from ressource.check_role import check_role, get_user_role_names
 from dotenv import load_dotenv
+from ressource.dm import send_dm_every_hour_at_42
 load_dotenv()
 import datetime
 asyncio.set_event_loop(asyncio.new_event_loop())
@@ -33,7 +34,7 @@ def time_to_timestamp(date_str):
     dt = dt.replace(tzinfo=datetime.timezone.utc)
     return int(dt.timestamp())
 
-print(f"{time_to_timestamp("26/01/2026")}")
+print(f"{time_to_timestamp('26/01/2026')}")
 
 lol_character_list = [
     "Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe",
@@ -88,6 +89,11 @@ async def bye(ctx):
 async def ping(ctx):
    print("Commande Ping")
    await ctx.respond(f"Pong ! {bot.latency} ms")
+
+@bot.slash_command(name="test", description="This is a command test")
+async def test(ctx: discord.ApplicationContext):
+    asyncio.create_task(send_dm_every_hour_at_42(bot, 403173164651380736, "Test"))
+    await ctx.respond("Test lancé ! Je vais envoyer le message en MP.")
 
 @bot.slash_command(name="embed", description="Create a embed")
 async def tableau(interaction : discord.Interaction, title: str, description: str):
